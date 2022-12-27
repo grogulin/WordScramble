@@ -55,6 +55,9 @@ struct ContentView: View {
             } message: {
                 Text(errorMessage)
             }
+            .toolbar {
+                Button("Restart", action: startGame)
+            }
         }
     }
     
@@ -77,6 +80,16 @@ struct ContentView: View {
             return
         }
         
+        guard isLongEnough(word: answer) else {
+            wordError(title: "Word is too short", message: "Your word must contain at least 3 letters")
+            return
+        }
+        
+        guard isNotRootWord(word: answer) else {
+            wordError(title: "Too simple", message: "You can't just copy the root word :)")
+            return
+        }
+        
 //        let scoreIncrease = Int(pow(2, Double(answer.count-1))) + (usedWords.count * 10)
         let scoreIncrease = (answer.count * 2) + (usedWords.count * usedWords.count)
         
@@ -88,6 +101,8 @@ struct ContentView: View {
     }
     
     func startGame() {
+        usedWords = [String]()
+        score = 0
         if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt") {
             if let startWords = try? String(contentsOf: startWordsURL) {
                 let allWords = startWords.components(separatedBy: "\n")
@@ -124,6 +139,14 @@ struct ContentView: View {
         let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
         
         return misspelledRange.location == NSNotFound
+    }
+    
+    func isLongEnough(word: String) -> Bool {
+        word.count >= 3
+    }
+    
+    func isNotRootWord(word: String) -> Bool {
+        word != rootWord
     }
     
     func wordError(title: String, message: String) {
